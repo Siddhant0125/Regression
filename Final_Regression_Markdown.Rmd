@@ -1,0 +1,76 @@
+---
+title: "Regression"
+author: "Siddhant Madan"
+date: "4/1/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+```{r echo=TRUE}
+#importing library
+library(tidyverse)
+library(ggcorrplot)
+```
+```{r echo=TRUE}
+#Reading Data set and exploring
+wine<-read.csv("wine.csv")
+str(wine)
+summary(wine)
+```
+```{r echo=TRUE}
+#Creating Linear Regression Models using Different Independent variables and calculating Sum of Squared Errors(SSE) for each Model to get the model with the minimum SSE
+model1<-lm(Price~AGST,data=wine)
+summary(model1)
+model1$residuals
+SSE1<-sum(model1$residuals^2)
+SSE1
+model2<-lm(Price~AGST + HarvestRain,data=wine)
+model2
+summary(model2)
+SSE2<-sum(model2$residuals^2)
+SSE2
+model3<-lm(Price~AGST + HarvestRain +WinterRain +Age +FrancePop,data=wine)
+model3
+summary(model3)
+SSE3<-sum(model3$residuals^2)
+SSE3
+```
+```{r echo=TRUE}
+#Finding Correlation between Variables
+cor(wine$FrancePop,wine$Age)
+ans<-cor(wine)
+```
+```{r echo=TRUE}
+#Plotting Correlation and Checking Multicollinearity
+val<-ggcorrplot(ans)
+plot(val)
+```
+```{r echo=TRUE}
+#Plotting the best Correlation
+correlation<-ggplot(wine,aes(x=FrancePop,y=Age)) + geom_point()+geom_smooth(method="lm",se=FALSE)
+plot(correlation)
+```
+```{r}
+#Choosing the variables for final Model
+model4<-lm(Price~AGST + HarvestRain +WinterRain +Age,data=wine)
+model4
+summary(model4)
+SSE4<-sum(model4$residuals^2)
+SSE4
+```
+```{r}
+#Running the model on test data and checking the performance using R square(Rsq)
+wine_test<-read.csv("Wine_test.csv")
+str(wine_test)
+predict_price<-predict(model4,newdata = wine_test)
+predict_price
+SSE<-sum((wine_test$Price-predict_price)^2)
+SST<-sum((wine_test$Price-mean(wine$Price))^2)
+Rsq<- 1- SSE/SST
+Rsq
+```
